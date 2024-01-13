@@ -1,7 +1,7 @@
-use serde::{ser, Serialize};
+// use serde::{ser, Serialize};
 
-use super::error::{Error, Result};
+// use super::error::{Error, Result};
 
-pub struct Serializer {
+// pub struct Serializer {
     
-}
+// }
