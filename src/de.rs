@@ -89,7 +89,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_u8(self.parser.parse_uint()?)
+        visitor.visit_u16(self.parser.parse_uint()?)
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
