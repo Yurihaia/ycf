@@ -1,0 +1,166 @@
+{
+    "name": "YCF",
+    "scopeName": "source.ycf",
+    "patterns": [
+        {
+            "include": "#mapcontents"
+        }
+    ],
+    "repository": {
+        "array": {
+            "begin": "\\[",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.array.begin.ycf"
+                }
+            },
+            "end": "\\]",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.array.end.ycf"
+                }
+            },
+            "name": "meta.structure.array.ycf",
+            "patterns": [
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        "comments": {
+            "captures": {
+                "1": {
+                    "name": "punctuation.definition.comment.ycf"
+                }
+            },
+            "match": "(//).*$\\n?",
+            "name": "comment.line.double-slash.ycf"
+        },
+        "keyword": {
+            "match": "\\b(?:true|false|null)\\b",
+            "name": "keyword.ycf"
+        },
+        "number": {
+            "patterns": [
+                {
+                    "match": "0x[0-9a-fA-F][0-9_a-fA-F_]*",
+                    "name": "constant.numeric.hex.ycf"
+                },
+                {
+                    "match": "0b[01][01_]*",
+                    "name": "constant.numeric.bin.ycf"
+                },
+                {
+                    "match": "0o[0-7][0-7_]*",
+                    "name": "constant.numeric.oct.ycf"
+                },
+                {
+                    "match": "-?[0-9][0-9_]*(?:\\.[0-9_]*)?(?:[eE][+\\-]?[0-9_]*)?",
+                    "name": "constant.numeric.dec.ycf"
+                }
+            ]
+        },
+        "map": {
+            "begin": "\\{",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.dictionary.begin.ycf"
+                }
+            },
+            "end": "\\}",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.dictionary.end.ycf"
+                }
+            },
+            "name": "meta.structure.dictionary.ycf",
+            "patterns": [
+                {
+                    "include": "#mapcontents"
+                }
+            ]
+        },
+        "string": {
+            "begin": "\"",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.string.begin.ycf"
+                }
+            },
+            "end": "\"",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.string.end.ycf"
+                }
+            },
+            "name": "string.quoted.double.ycf",
+            "patterns": [
+                {
+                    "include": "#stringcontent"
+                }
+            ]
+        },
+        "mapkey": {
+            "match": "\\b[A-Za-z_][A-Za-z0-9_\\\\-]*(?:(\\.)[A-Za-z_][A-Za-z0-9_\\\\-]*)*\\b",
+            "name": "variable.other.property.ycf",
+            "captures": {
+                "1": {
+                    "name": "punctuation.separator.dictionary.path-key.ycf"
+                }
+            }
+        },
+        "stringcontent": {
+            "patterns": [
+                {
+                    "match": "\\\\([nrt0\\\\\"]|x[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]{1,6}\\})",
+                    "name": "constant.character.escape.ycf"
+                },
+                {
+                    "match": "\\\\.",
+                    "name": "invalid.illegal.unrecognized-string-escape.ycf"
+                }
+            ]
+        },
+        "mapcontents": {
+            "patterns": [
+                {
+                    "match": "=",
+                    "name": "punctuation.separator.dictionary.key-value.ycf"
+                },
+                {
+                    "name": "meta.structure.dictionary.value.ycf",
+                    "patterns": [
+                        {
+                            "include": "#value"
+                        }
+                    ]
+                },
+                {
+                    "include": "#mapkey"
+                }
+            ]
+        },
+        "value": {
+            "patterns": [
+                {
+                    "include": "#keyword"
+                },
+                {
+                    "include": "#number"
+                },
+                {
+                    "include": "#string"
+                },
+                {
+                    "include": "#array"
+                },
+                {
+                    "include": "#map"
+                },
+                {
+                    "include": "#comments"
+                }
+            ]
+        }
+    }
+}
