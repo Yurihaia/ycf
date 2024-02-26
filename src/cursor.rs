@@ -105,7 +105,7 @@ impl<'a> Cursor<'a> {
                 Some(TokenKind::Whitespace)
             }
             c if is_xid_start(c) || c == '_' => {
-                let start = self.offset() - 1;
+                let start = self.offset() - c.len_utf8();
                 // eat the rest of the ident
                 self.eat_while(|c| is_xid_continue(c) || c == '_' || c == '-');
                 let end = self.offset();
