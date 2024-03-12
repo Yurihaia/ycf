@@ -304,8 +304,8 @@ impl<'de, 'a> MapAccess<'de> for &'a mut Deserializer<'de> {
     where
         V: DeserializeSeed<'de>,
     {
-        if self.parser.peek_no_skip().token.kind == TokenKind::Dot {
-            self.parser.next_no_skip();
+        if self.parser.peek_token().token.kind == TokenKind::Dot {
+            self.parser.next_token();
             seed.deserialize(&mut PathMapDeserializer {
                 de: self,
                 done: false,
@@ -328,10 +328,10 @@ impl<'a, 'de> de::Deserializer<'de> for &'a mut KeyDeserializer<'a, 'de> {
     where
         V: Visitor<'de>,
     {
-        let next = self.de.parser.peek_no_skip();
+        let next = self.de.parser.peek_token();
         match next.token.kind {
             TokenKind::Ident => {
-                self.de.parser.next_no_skip();
+                self.de.parser.next_token();
                 visitor.visit_borrowed_str(self.de.parser.src(next.token))
             }
             _ => Err(Error::parse(ParseError::new(
@@ -402,8 +402,8 @@ impl<'a, 'de> MapAccess<'de> for &'a mut PathMapDeserializer<'a, 'de> {
         V: DeserializeSeed<'de>,
     {
         self.done = true;
-        if self.de.parser.peek_no_skip().token.kind == TokenKind::Dot {
-            self.de.parser.next_no_skip();
+        if self.de.parser.peek_token().token.kind == TokenKind::Dot {
+            self.de.parser.next_token();
             seed.deserialize(&mut PathMapDeserializer {
                 de: self.de,
                 done: false,
@@ -442,8 +442,16 @@ impl<'de, 'a> VariantAccess<'de> for &'a mut Deserializer<'de> {
     where
         T: DeserializeSeed<'de>,
     {
-        self.parser.map_delimiter()?;
-        seed.deserialize(self)
+        if self.parser.peek_token().token.kind == TokenKind::Dot {
+            self.parser.next_token();
+            seed.deserialize(&mut PathMapDeserializer {
+                de: self,
+                done: false,
+            })
+        } else {
+            self.parser.map_delimiter()?;
+            seed.deserialize(self)
+        }
     }
 
     fn tuple_variant<V>(self, _len: usize, visitor: V) -> Result<V::Value>
@@ -458,8 +466,19 @@ impl<'de, 'a> VariantAccess<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        self.parser.map_delimiter()?;
-        de::Deserializer::deserialize_map(self, visitor)
+        if self.parser.peek_token().token.kind == TokenKind::Dot {
+            self.parser.next_token();
+            de::Deserializer::deserialize_map(
+                &mut PathMapDeserializer {
+                    de: self,
+                    done: false,
+                },
+                visitor,
+            )
+        } else {
+            self.parser.map_delimiter()?;
+            de::Deserializer::deserialize_map(self, visitor)
+        }
     }
 }
 
@@ -513,8 +532,8 @@ impl<'de, 'a> MapAccess<'de> for &'a mut TopDeserializer<'de> {
         V: DeserializeSeed<'de>,
     {
         // println!("{:?}", self.de.parser.peek_token().token.kind);
-        if self.de.parser.peek_no_skip().token.kind == TokenKind::Dot {
-            self.de.parser.next_no_skip();
+        if self.de.parser.peek_token().token.kind == TokenKind::Dot {
+            self.de.parser.next_token();
             seed.deserialize(&mut PathMapDeserializer {
                 de: &mut self.de,
                 done: false,
