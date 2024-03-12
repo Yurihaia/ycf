@@ -4,13 +4,13 @@ use crate::cursor::{Cursor, Keyword, Token, TokenKind};
 
 #[derive(Clone, Debug)]
 pub struct Parser<'a> {
-    cursor: Cursor<'a>,
+    pub cursor: Cursor<'a>,
     // these are 0 indexed
-    line: u32,
-    col: u32,
+    pub line: u32,
+    pub col: u32,
     // whether to skip whitespace and comments
-    skip: bool,
-    lookahead: Option<SpanToken>,
+    pub skip: bool,
+    pub lookahead: Option<SpanToken>,
 }
 
 impl<'a> Parser<'a> {
@@ -381,13 +381,17 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn try_end_map(&mut self) -> Option<()> {
-        if let TokenKind::EndCurly = self.peek_token().token.kind {
-            self.next_token();
-            Some(())
-        } else {
-            None
-        }
+    // pub fn try_end_map(&mut self) -> Option<()> {
+    //     if let TokenKind::EndCurly = self.peek_token().token.kind {
+    //         self.next_token();
+    //         Some(())
+    //     } else {
+    //         None
+    //     }
+    // }
+    
+    pub fn peek_end_map(&mut self) -> bool {
+        TokenKind::EndCurly == self.peek_token().token.kind
     }
 
     pub fn parse_path(&mut self) -> Result<MapPath, ParseError> {
@@ -423,7 +427,7 @@ impl<'a> Parser<'a> {
         if let TokenKind::StartSquare = next.token.kind {
             Ok(())
         } else {
-            Err(ParseError::new(next, ParseErrorKind::ExpectedMapStart))
+            Err(ParseError::new(next, ParseErrorKind::ExpectedListStart))
         }
     }
 
@@ -432,7 +436,7 @@ impl<'a> Parser<'a> {
         if let TokenKind::EndSquare = next.token.kind {
             Ok(())
         } else {
-            Err(ParseError::new(next, ParseErrorKind::ExpectedMapEnd))
+            Err(ParseError::new(next, ParseErrorKind::ExpectedListEnd))
         }
     }
 
@@ -445,13 +449,17 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn try_end_list(&mut self) -> Option<()> {
-        if let TokenKind::EndSquare = self.peek_token().token.kind {
-            self.next_token();
-            Some(())
-        } else {
-            None
-        }
+    // pub fn try_end_list(&mut self) -> Option<()> {
+    //     if let TokenKind::EndSquare = self.peek_token().token.kind {
+    //         self.next_token();
+    //         Some(())
+    //     } else {
+    //         None
+    //     }
+    // }
+    
+    pub fn peek_end_list(&mut self) -> bool {
+        TokenKind::EndSquare == self.peek_token().token.kind
     }
 }
 
@@ -623,7 +631,8 @@ mod tests {
             } else if p.try_start_list().is_some() {
                 let mut vec = Vec::new();
                 loop {
-                    if p.try_end_list().is_some() {
+                    if p.peek_end_list() {
+                        p.end_list()?;
                         break;
                     }
                     if p.peek_eof() {
@@ -635,7 +644,8 @@ mod tests {
             } else if p.try_start_map().is_some() {
                 let mut map = HashMap::new();
                 loop {
-                    if p.try_end_map().is_some() {
+                    if p.peek_end_map() {
+                        p.end_map()?;
                         break;
                     }
                     if p.peek_eof() {

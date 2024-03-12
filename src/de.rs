@@ -193,7 +193,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         self.parser.start_list()?;
-        visitor.visit_seq(self)
+        let out = visitor.visit_seq(&mut *self)?;
+        self.parser.end_list()?;
+        Ok(out)
     }
 
     fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value>
@@ -220,7 +222,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         self.parser.start_map()?;
-        visitor.visit_map(self)
+        let out = visitor.visit_map(&mut *self)?;
+        self.parser.end_map()?;
+        Ok(out)
     }
 
     fn deserialize_struct<V>(
@@ -277,7 +281,7 @@ impl<'de, 'a> SeqAccess<'de> for &'a mut Deserializer<'de> {
     where
         T: DeserializeSeed<'de>,
     {
-        if self.parser.try_end_list().is_some() {
+        if self.parser.peek_end_list() {
             return Ok(None);
         }
 
@@ -292,7 +296,7 @@ impl<'de, 'a> MapAccess<'de> for &'a mut Deserializer<'de> {
     where
         K: DeserializeSeed<'de>,
     {
-        if self.parser.try_end_map().is_some() {
+        if self.parser.peek_end_map() {
             return Ok(None);
         }
 
